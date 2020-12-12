@@ -22,6 +22,8 @@ mongoose.connection.once("open", () => {
     console.log("Successfully connected to DB");
 });
 
+app.use(express.urlencoded({extended: true}));
+
 app.use("/pokemons", pokemonRouter);
 
 app.listen(3000, () => {
