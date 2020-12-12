@@ -77,6 +77,7 @@ module.exports.createOnePokemon = async (req,res) => {
 
     if(req.body.pokemon){
 
+        const { pokemon } = req.body;
         // if we have any images we associate them
         // with the pokemon
         if(req.files){
