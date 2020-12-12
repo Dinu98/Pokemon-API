@@ -1,5 +1,6 @@
 const pokemonSchema = require('../models/pokemon');
 const axios = require('axios');
+const customError = require('../utils/customError')
 
 module.exports.populateDatabase = async (req,res) => {
     try{
@@ -68,7 +69,7 @@ module.exports.createOnePokemon = async (req,res) => {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ newPokemon}))
     } else {
-        res.send("Invalid data");
+        throw new customError("Invalid data", 400);
     }
 };
 
@@ -78,7 +79,7 @@ module.exports.deleteAllPokemons = async(req,res) => {
     res.send("Successfully deleted all pokemons");
 };
 
-module.exports.getOnePokemon = async (req,res) =>{
+module.exports.getOnePokemon = async (req,res,next) =>{
 
     const pokemon = await pokemonSchema.findById(req.params.id);
 
@@ -86,7 +87,7 @@ module.exports.getOnePokemon = async (req,res) =>{
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ pokemon }))
     } else {
-        res.send("Could not find this pokemon");
+        throw new customError("Invalid id", 400);
     }
 };
 
@@ -100,19 +101,15 @@ module.exports.editOnePokemon = async (req,res) => {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ updatedPokemon }))
     } else {
-        console.log("Invalid data");
+        throw new customError("Invalid data", 400);
     }
 };
 
-module.exports.deleteOnePokemon = async(req,res) => {
+module.exports.deleteOnePokemon = async(req,res,next) => {
     const { id } = req.params;
 
     await pokemonSchema.findByIdAndDelete(id, (err,deleted) => {
-        if(err){
-            res.send(err);
-        } else {
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ deleted }))
-        }
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ deleted }))
     });
 };
