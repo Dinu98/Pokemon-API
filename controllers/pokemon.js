@@ -102,7 +102,7 @@ module.exports.deleteAllPokemons = async(req,res) => {
 
     // and delete them one by one
     for(let pokemon of pokemons){
-        pokemon.deleteOne();
+        await pokemon.deleteOne();
     }
 
     res.send("Successfully deleted all pokemons");
