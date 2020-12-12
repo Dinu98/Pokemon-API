@@ -5,6 +5,7 @@ if(process.env.NODE_ENV !== 'production'){
 const express = require('express');
 const mongoose = require('mongoose');
 const pokemonRouter = require('./routes/pokemon');
+const customError = require('./utils/customError')
 
 const app = express();
 
@@ -27,7 +28,7 @@ app.use(express.urlencoded({extended: true}));
 app.use("/pokemons", pokemonRouter);
 
 app.all('*', (req,res,next) => {
-    next(new expressError("Page not found", 404));
+    next(new customError("Page not found", 404));
 });
 
 app.use((err,req,res,next) => {
