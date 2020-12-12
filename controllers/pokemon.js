@@ -2,6 +2,7 @@ const pokemonSchema = require('../models/pokemon');
 const axios = require('axios');
 const customError = require('../utils/customError')
 
+
 module.exports.populateDatabase = async (req,res) => {
     try{
     await pokemonSchema.countDocuments({}, async (err, count) => {
@@ -62,8 +63,12 @@ module.exports.getAllPokemons = async (req,res) => {
 
 module.exports.createOnePokemon = async (req,res) => {
     const { pokemon } = req.body;
-
     if(pokemon){
+
+        if(req.files){
+            pokemon.images = req.files.map( fl => ({url: fl.path, filename: fl.filename}));
+        }
+    
         const newPokemon = await new pokemonSchema(pokemon).save();
 
         res.setHeader('Content-Type', 'application/json');
@@ -74,7 +79,11 @@ module.exports.createOnePokemon = async (req,res) => {
 };
 
 module.exports.deleteAllPokemons = async(req,res) => {
-    await pokemonSchema.deleteMany({});
+    const pokemons = await pokemonSchema.find({});
+
+    for(let pokemon of pokemons){
+        pokemon.deleteOne();
+    }
 
     res.send("Successfully deleted all pokemons");
 };
@@ -92,12 +101,18 @@ module.exports.getOnePokemon = async (req,res,next) =>{
 };
 
 module.exports.editOnePokemon = async (req,res) => {
-    const { id } = req.params;
-    const { pokemon } = req.body;
+    if(req.body.pokemon){
+        if(req.files){
+            const toUpdatePokemon = await pokemonSchema.findById(req.params.id);
+            Object.assign(toUpdatePokemon, req.body.pokemon);
+            const images = req.files.map( fl => ({url: fl.path, filename: fl.filename}))
+            toUpdatePokemon.images.push(...images)
+            await toUpdatePokemon.save();
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ updatedPokemon : toUpdatePokemon }))
+        }
 
-    if(pokemon){
-        const updatedPokemon = await pokemonSchema.findByIdAndUpdate(id, pokemon, {new: true});
-        console.log(updatedPokemon);
+        const updatedPokemon = await pokemonSchema.findByIdAndUpdate(req.params.id, pokemon, {new: true});
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ updatedPokemon }))
     } else {

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { cloudinary } = require('../cloudinary')
 
 const { Schema } = mongoose;
 
@@ -11,6 +12,11 @@ const abilitySchema = new  Schema({
 const itemSchema = new  Schema({
     name: String,
     url: String
+});
+
+const imageSchema = new  Schema({
+    url: String,
+    filename: String
 });
 
 const pokemonSchema = new  Schema({
@@ -27,7 +33,24 @@ const pokemonSchema = new  Schema({
         required: [true, "Weight is missing"]
     },
     abilities:[abilitySchema],
-    firstItem: itemSchema
+    firstItem: itemSchema,
+    images: [imageSchema]
+});
+
+pokemonSchema.post("findOneAndDelete", async function(data) {
+    if(data){
+        for(let img of data.images){
+            console.log(img);
+            await cloudinary.uploader.destroy(img.filename);
+        }
+    }
+});
+
+pokemonSchema.pre("deleteOne",{ document: true }, async function (next) {
+    for(let img of this.images){
+        await cloudinary.uploader.destroy(img.filename);
+    }
+    next();
 });
 
 module.exports = mongoose.model("Pokemon", pokemonSchema);

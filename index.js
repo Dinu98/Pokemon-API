@@ -3,25 +3,15 @@ if(process.env.NODE_ENV !== 'production'){
 }
 
 const express = require('express');
-const mongoose = require('mongoose');
 const pokemonRouter = require('./routes/pokemon');
 const customError = require('./utils/customError')
+const database = require('./database');
 
 const app = express();
 
 const databaseUrl = process.env.MONGO_DB_URL || 'mongodb://localhost:27017/pokeManager'
 
-mongoose.connect(databaseUrl,{
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-});
-
-mongoose.connection.on("error", console.error.bind(console, "Error while trying to connect to DB"));
-mongoose.connection.once("open", () => {
-    console.log("Successfully connected to DB");
-});
+database.connect(databaseUrl);
 
 app.use(express.urlencoded({extended: true}));
 
