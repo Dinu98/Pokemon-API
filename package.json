@@ -1,0 +1,24 @@
+{
+  "name": "pokemon-api",
+  "version": "1.0.0",
+  "description": "Small API that manages pokemons",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dinu98/Pokemon-API.git"
+  },
+  "author": "Dinescu Alexandru-Catalin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dinu98/Pokemon-API/issues"
+  },
+  "homepage": "https://github.com/Dinu98/Pokemon-API#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.11.7"
+  }
+}
