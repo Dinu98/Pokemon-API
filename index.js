@@ -1,9 +1,15 @@
+if(process.env.NODE_ENV !== 'production'){
+    require('dotenv').config();
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/pokeManager',{
+const databaseUrl = process.env.MONGO_DB_URL || 'mongodb://localhost:27017/pokeManager'
+
+mongoose.connect(databaseUrl,{
     useUnifiedTopology: true,
     useNewUrlParser: true,
     useCreateIndex: true,
