@@ -19,6 +19,8 @@ const imageSchema = new  Schema({
     filename: String
 });
 
+// schema that structures our Pokemon
+// it uses 3 more schemas defined above
 const pokemonSchema = new  Schema({
     name:{
         type: String,
@@ -37,6 +39,9 @@ const pokemonSchema = new  Schema({
     images: [imageSchema]
 });
 
+// we use this mongoose middleware to ensure that 
+// when we delete a pokemon by id, the image associated with it
+// is deleted from cloudinary as well
 pokemonSchema.post("findOneAndDelete", async function(data) {
     if(data){
         for(let img of data.images){
@@ -46,6 +51,9 @@ pokemonSchema.post("findOneAndDelete", async function(data) {
     }
 });
 
+// we use this mongoose middleware to ensure that
+// when we delete all pokemons in our DB, their associated images
+// are deleted as well
 pokemonSchema.pre("deleteOne",{ document: true }, async function (next) {
     for(let img of this.images){
         await cloudinary.uploader.destroy(img.filename);

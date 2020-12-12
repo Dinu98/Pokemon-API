@@ -9,6 +9,7 @@ const database = require('./database');
 
 const app = express();
 
+// we hold the link to local host just as a plan B
 const databaseUrl = process.env.MONGO_DB_URL || 'mongodb://localhost:27017/pokeManager'
 
 database.connect(databaseUrl);
@@ -21,6 +22,7 @@ app.all('*', (req,res,next) => {
     next(new customError("Page not found", 404));
 });
 
+// custom error handler that assumes something is wrong with the server 
 app.use((err,req,res,next) => {
     const {status = 500} = err;
     if(!err.message){

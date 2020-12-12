@@ -16,5 +16,5 @@ class Database {
         });
     }
 }
-
+// exporting singletone
 module.exports = new Database();

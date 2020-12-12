@@ -1,5 +1,6 @@
 const joi = require('joi');
 
+// schema that structures how we want the data to look like
 pokemonSchema = joi.object({
     pokemon: joi.object({
         name: joi.string().required(),
