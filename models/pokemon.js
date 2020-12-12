@@ -26,8 +26,8 @@ const pokemonSchema = new  Schema({
         type:String,
         required: [true, "Weight is missing"]
     },
-    ability:[abilitySchema],
-    item: itemSchema
+    abilities:[abilitySchema],
+    firstItem: itemSchema
 });
 
 module.exports = mongoose.model("Pokemon", pokemonSchema);
