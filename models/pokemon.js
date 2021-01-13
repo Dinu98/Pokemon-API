@@ -51,14 +51,4 @@ pokemonSchema.post("findOneAndDelete", async function(data) {
     }
 });
 
-// we use this mongoose middleware to ensure that
-// when we delete all pokemons in our DB, their associated images
-// are deleted as well
-pokemonSchema.pre("deleteOne",{ document: true }, async function (next) {
-    for(let img of this.images){
-        await cloudinary.uploader.destroy(img.filename);
-    }
-    next();
-});
-
 module.exports = mongoose.model("Pokemon", pokemonSchema);

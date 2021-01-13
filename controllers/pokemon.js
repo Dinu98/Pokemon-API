@@ -9,7 +9,6 @@ module.exports.populateDatabase = async (req,res) => {
 
     // we first wait to see how many pokemons we have in our DB
     await pokemonSchema.countDocuments({}, async (err, count) => {
-        console.log(count);
         if(count < 100){
 
             // if we have less than 100 we start requesting data
@@ -52,8 +51,7 @@ module.exports.populateDatabase = async (req,res) => {
             }
 
             // We return the number of newly added pokemons
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ newPokemons: 100 - count })) 
+            res.json({ newPokemons: 100 - count });
         } else {
             // If we have atleast 100 pokemons in our DB
             // We don't need to populate it
@@ -67,8 +65,7 @@ module.exports.populateDatabase = async (req,res) => {
 module.exports.getAllPokemons = async (req,res) => {
     const pokemons = await pokemonSchema.find({}).sort({weight: -1});
 
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ pokemons }))
+    res.json({ pokemons });
 
 };
 
@@ -86,8 +83,7 @@ module.exports.createOnePokemon = async (req,res) => {
     
         const newPokemon = await new pokemonSchema(pokemon).save();
 
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ newPokemon}))
+        res.json({ newPokemon });
     } else {
         throw new customError("Invalid data", 400);
     }
@@ -96,14 +92,9 @@ module.exports.createOnePokemon = async (req,res) => {
 // responsible for deleting all pokemons
 module.exports.deleteAllPokemons = async(req,res) => {
 
-    // in order to use the "pre" mongoose middleware
-    // we need to first get all the pokemons
-    const pokemons = await pokemonSchema.find({});
+    await axios.delete(`https://${process.env.API_Key}:${process.env.API_Secret}@api.cloudinary.com/v1_1/${process.env.Cloud_Name}/resources/image/upload?prefix=PokemonAPI`);
 
-    // and delete them one by one
-    for(let pokemon of pokemons){
-        await pokemon.deleteOne();
-    }
+    await pokemonSchema.deleteMany({});
 
     res.send("Successfully deleted all pokemons");
 };
@@ -114,8 +105,7 @@ module.exports.getOnePokemon = async (req,res,next) =>{
     const pokemon = await pokemonSchema.findById(req.params.id);
 
     if(pokemon){
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ pokemon }))
+        res.json({ pokemon });
     } else {
         throw new customError("Invalid id", 400);
     }
@@ -141,14 +131,12 @@ module.exports.editOnePokemon = async (req,res) => {
             toUpdatePokemon.images.push(...images)
             await toUpdatePokemon.save();
 
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ updatedPokemon : toUpdatePokemon }))
+            res.json({ updatedPokemon: toUpdatePokemon });
         }
 
         //if we don't have any new image we can simply find and update
         const updatedPokemon = await pokemonSchema.findByIdAndUpdate(req.params.id, pokemon, {new: true});
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ updatedPokemon }))
+        res.json({ updatedPokemon });
 
     } else {
         throw new customError("Invalid data", 400);
@@ -161,7 +149,7 @@ module.exports.deleteOnePokemon = async(req,res,next) => {
 
     // here we use the "post" mongoose middleware
     await pokemonSchema.findByIdAndDelete(id, (err,deleted) => {
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ deleted }))
+
+        res.json({ deleted });
     });
 };
