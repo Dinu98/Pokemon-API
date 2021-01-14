@@ -1,6 +1,8 @@
 const pokemonSchema = require('../models/pokemon');
 const axios = require('axios');
 const customError = require('../utils/customError')
+var Pokedex = require('pokedex-promise-v2');
+var P = new Pokedex();
 
 // here are all the implementations of the API
 
@@ -12,15 +14,21 @@ module.exports.populateDatabase = async (req,res) => {
         if(count < 100){
 
             // if we have less than 100 we start requesting data
-            const firstGeneration = await axios.get('https://pokeapi.co/api/v2/generation/1');
-            for(let i = 0; i < 100 - count; i++){
-                const pokemonSpecies = await axios.get(firstGeneration.data.pokemon_species[i].url);
-                const pokemon = await axios.get(pokemonSpecies.data.varieties[0].pokemon.url);
-                if(pokemon)
-                {
-                    const { data } = pokemon;
-                    const {name, height, weight, abilities, held_items} = data;
+            const firstGeneration = await P.getGenerationByName("generation-i");
 
+            // we store the pokemons names
+            const names = [];
+            for(let i = 0; i < 100 - count; i++){
+                names.push(firstGeneration.pokemon_species[i].name);
+            }
+
+            // we use the names in order to get the pokemons complete data
+            const pokemons = await P.getPokemonByName(names);
+
+            if(pokemons){
+                for(let pokemon of pokemons){
+                    const {name, height, weight, abilities, held_items} = pokemon;
+    
                     // we need another restructured vector for abilities
                     // in order to easily pass it when we create the pokemon
                     const restructuredAbilities = []
@@ -34,7 +42,7 @@ module.exports.populateDatabase = async (req,res) => {
                     
                     // we get the first item from the array
                     const firstItem = held_items.shift();
-
+        
                     // if we have an item we delete 
                     // unnecessary properties
                     if(firstItem) 
@@ -48,8 +56,10 @@ module.exports.populateDatabase = async (req,res) => {
                         firstItem
                     }).save()
                 }
-            }
-
+            } else {
+                return null;
+            }    
+    
             // We return the number of newly added pokemons
             res.json({ newPokemons: 100 - count });
         } else {

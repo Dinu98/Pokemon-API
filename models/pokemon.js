@@ -45,7 +45,6 @@ const pokemonSchema = new  Schema({
 pokemonSchema.post("findOneAndDelete", async function(data) {
     if(data){
         for(let img of data.images){
-            console.log(img);
             await cloudinary.uploader.destroy(img.filename);
         }
     }

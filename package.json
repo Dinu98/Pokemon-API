@@ -25,6 +25,7 @@
     "joi": "^17.3.0",
     "mongoose": "^5.11.7",
     "multer": "^1.4.2",
-    "multer-storage-cloudinary": "^4.0.0"
+    "multer-storage-cloudinary": "^4.0.0",
+    "pokedex-promise-v2": "^3.3.0"
   }
 }
