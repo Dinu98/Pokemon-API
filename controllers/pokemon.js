@@ -1,33 +1,44 @@
 const pokemonSchema = require('../models/pokemon');
 const axios = require('axios');
-const customError = require('../utils/customError')
-var Pokedex = require('pokedex-promise-v2');
-var P = new Pokedex();
+const customError = require('../utils/customError');
 
 // here are all the implementations of the API
 
 // responsible for populating database
-module.exports.populateDatabase = async (req,res) => {
+module.exports.populateDatabase =  async (req,res) => {
 
     // we first wait to see how many pokemons we have in our DB
     await pokemonSchema.countDocuments({}, async (err, count) => {
         if(count < 100){
 
             // if we have less than 100 we start requesting data
-            const firstGeneration = await P.getGenerationByName("generation-i");
+            const firstGeneration = await axios.get('https://pokeapi.co/api/v2/generation/1');
 
-            // we store the pokemons names
-            const names = [];
+            // we store promises of specific pokemons 
+            const promises = [];
             for(let i = 0; i < 100 - count; i++){
-                names.push(firstGeneration.pokemon_species[i].name);
+                promises.push(new Promise((resolve, reject) => {
+                    // we don't need await here because we await Promise.all
+                    const pokemon = axios.get(`https://pokeapi.co/api/v2/pokemon/${firstGeneration.data.pokemon_species[i].name}`);
+
+                    if(pokemon){
+                        resolve(pokemon);
+                    }
+                    reject("Bad request");
+                }));
             }
 
-            // we use the names in order to get the pokemons complete data
-            const pokemons = await P.getPokemonByName(names);
+            // we store pokemons data
+            let pokemons = [];
+            await Promise.all(promises).then( (values) => {
+                pokemons = values;
+            });
 
             if(pokemons){
                 for(let pokemon of pokemons){
-                    const {name, height, weight, abilities, held_items} = pokemon;
+
+                    const { data } = pokemon;
+                    const {name, height, weight, abilities, held_items} = data;
     
                     // we need another restructured vector for abilities
                     // in order to easily pass it when we create the pokemon
@@ -56,12 +67,13 @@ module.exports.populateDatabase = async (req,res) => {
                         firstItem
                     }).save()
                 }
+
+                // We return the number of newly added pokemons
+                res.json({ newPokemons: 100 - count });
+
             } else {
                 return null;
             }    
-    
-            // We return the number of newly added pokemons
-            res.json({ newPokemons: 100 - count });
         } else {
             // If we have atleast 100 pokemons in our DB
             // We don't need to populate it
