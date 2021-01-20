@@ -4,6 +4,7 @@
  You can add images from your device when you create/update a pokemon
 
 Gets/Deletes/ all the pokemons in DB
+
 Creates a pokemon in DB
 
  https://mokemon-panager.herokuapp.com/pokemons
